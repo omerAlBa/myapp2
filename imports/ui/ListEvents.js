@@ -1,55 +1,86 @@
 import React, { Component } from 'react';
 import { withTracker } from 'meteor/react-meteor-data';
 import { Events } from "../api/events";
-
-const buttonStyle = {
-  margin: "10px 15px",
-  maxWidth: "120px"
-}
+import SearchPage from './SearchPage';
+import { handleResponseToUser } from './action';
+import './style/EventsShow.css';
 
 class ListEvents extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isUpdating: false,
+      events: [],
+      isSearching: false,
+      messageToUser: []
+    }
+    this.handleSearch = this.handleSearch.bind(this)
+  }
+
   handleEdit = (eventId) => {
-    // onEdit we want to have the form on AddEvents populate the fields and allow for editing
-    // so we pass the eventId to the parent component so that it tells AddEvent component what data is to be displayed
     this.props.handleEdit(eventId);
   }
 
   handleDelete = (eventId) => {
-    // onDelete we just remove the event from the db
-    Events.remove({_id: eventId});
+    let toDelete = confirm('Dieses Rezept wird dauerhaft gelöscht, wünschen Sie das?')
+    //request User before delete!
+    if (!toDelete) { return false }
+
+    const isSuccess = Events.remove({_id: eventId})
+    this.setState({
+      messageToUser: handleResponseToUser({type:'löschvorgang', status: isSuccess})
+    }) 
   }
 
+  handleSearch(keyword){
+    const event = Events.find({'title' : new RegExp(keyword,'g')}).fetch();
+    this.setState({
+      events : event,
+      isSearching: true
+    })
+  }
+
+
   render() {
+    let events = [];
+    // submit the list you are looking for or everything
+    if(!this.state.isSearching){
+      events = this.props.events
+    }  else {
+      events = this.state.events
+    }
+
     return (
       <div>
+        <SearchPage searchFor={this.handleSearch}/>
+        {/* {this.state.messageToUser.map(msg => msg)} */}
         {
-          this.props.events.length ? this.props.events.map((event) => (
+          events.length ? events.map((event) => (
             <div className="list-group" key={event._id} style={{ margin: "20px 100px" }}>
               <div className="list-group-item list-group-item-action flex-column align-items-start">
                 
                 <div className="d-flex w-100 justify-content-between">
-                  <h5 className="mb-1">{event.title}</h5>
-                  <small>{""}</small>
-                  {console.log('id: ', event._id._str)}
+                  <div>
+                    <h5 className="mb-1">{event.title}</h5>
+                    <small><i class="fas fa-user-friends"></i> {event.number_of_people ? event.number_of_people : "" }</small>
+                  </div>
+                  <small>{event.date}</small>
                 </div>
 
                 <p className="mb-1">{event.description}</p>
 
                 <div className="controls row">
                   <button
-                    className="btn btn-outline-warning col"
+                    className="btn btn-outline-warning col buttonStyle"
                     data-toggle="modal"
                     data-target="#myModal"
-                    type="button"
-                    style={buttonStyle}
                     onClick={() => this.handleEdit(event._id)}
                   >
                     Edit Event
                   </button>
 
                   <button
-                    className="btn btn-outline-danger col"
-                    style={buttonStyle}
+                    className="btn btn-outline-danger col buttonStyle"
                     onClick={() => this.handleDelete(event._id)}
                   >
                     Delete Event
@@ -63,12 +94,6 @@ class ListEvents extends Component {
         }
       </div>
     );
-  }
-}
-
-export const finde = () => {
-  return {
-    event : Events.find({'title' : 'Bye Word'}).fetch()
   }
 }
 

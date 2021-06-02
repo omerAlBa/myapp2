@@ -1,15 +1,44 @@
 import React from "react";
-import { MDBCol, MDBFormInline, MDBIcon } from "mdbreact";
 
 class SearchPage extends React.Component {
+    constructor(props){
+        super(props)
+        this.state = {
+            show: false,
+            value: ""
+        }
+        this.beginSreach = this.beginSreach.bind(this);
+        this.handleChange = this.handleChange.bind(this);
+    }
+
+    beginSreach(){
+        this.props.searchFor(this.state.value)
+    }
+
+    handleChange(event){
+        this.setState({
+            value: event.target.value
+        })
+    }
+
     render(){
+        // hide button if input:tag is empty
+        let button = (this.state.value.length > 2 ? 
+                            <button className="searchBTN" onClick={this.beginSreach}>
+                                Suchen: <i className="fas fa-search"></i>
+                            </button> : null);
+
         return (
-            <MDBCol md="6">
-              <MDBFormInline className="md-form">
-                <MDBIcon icon="search" />
-                <input className="form-control form-control-sm ml-3 w-75" type="text" placeholder="Search" aria-label="Search" />
-              </MDBFormInline>
-            </MDBCol>
+            <div>
+                <div className='SeachPage'>
+                    <input  type="text" 
+                        value={this.state.value} 
+                        onChange={this.handleChange}
+                        placeholder='Hier suchen, auch teilsuche möglich!'
+                    />
+                    {button}
+                </div>
+            </div>
           );
     }
 }

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import AddEvent from "./AddEvent";
 import ListEvents from "./ListEvents";
 import { Events } from "../api/events";
+import './style/App.css'
 
 class App extends Component {
   constructor(props) {
@@ -16,7 +17,6 @@ class App extends Component {
     // find the event that requires editing
     const event = Events.findOne({_id: eventId});
 
-    // set it into state also sets a flag `isUpdating` that will allow us to have a dynamic form on AddEvent component
     this.setState({
       event,
       isUpdating: true
@@ -25,7 +25,7 @@ class App extends Component {
 
   render() {
     return (
-      <div>
+      <div className='App'>
         <AddEvent
           event={this.state.event}
           isUpdating={this.state.isUpdating}
